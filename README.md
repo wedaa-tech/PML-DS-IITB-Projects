@@ -1,123 +1,255 @@
 # PML-DS-IITB-Projects
-Repository for adding projects and work while obtaining Data Science diploma with IIT-Bonmbay.
 
-
-# YouTube → Image Dataset Generator & Grid Splitter
-
-This project automates the entire pipeline of converting a **YouTube video** into a **machine-learning-ready dataset**, with clean **train/test splits**, **800×600 images**, **8×8 grid overlays**, **tile segmentation**, and a final **ZIP package** for model ingestion.
+Repository for projects and coursework completed during the Data Science diploma program at IIT Bombay.
 
 ---
+
+## YouTube Video to Image Dataset Generator
+
+This project automates the complete pipeline for converting YouTube videos into machine-learning-ready datasets. The workflow includes frame extraction, automatic resizing, train/test splitting, 8×8 grid tile generation, metadata export, and final ZIP packaging for model ingestion.
+
+---
+
 ## Features
 
-Capture frames directly from **YouTube videos**  
-Automatically resize all frames to **800×600 (4:3 aspect ratio)**  
-Split into **train (80%)** and **test (20%)** datasets  
-Generate **metadata CSV** (`dataset_info.csv` and `tiles_info.csv`)  
-Build **8×8 grids (64 tiles)** per image with overlays  
-Export **final dataset as ZIP** (`frames_dataset_tiles.zip`)  
-Fully works on **macOS and Linux**  
-100% reproducible, minimal setup  
+- Capture frames directly from YouTube videos with configurable intervals
+- Automatic resizing of all frames to 800×600 pixels (4:3 aspect ratio)
+- Automatic train/test split (80% train, 20% test)
+- 8×8 grid overlay generation (64 tiles per image) with numbered visualization
+- Metadata CSV export for dataset and tile information
+- Final dataset packaged as ZIP archive
+- Cross-platform support for macOS and Linux
+- Fully automated setup and execution
+- Reproducible workflow with minimal manual intervention
 
 ---
 
 ## Prerequisites
 
 ### System Requirements
-- macOS or Linux
-- Internet connection
-- ~2GB disk space (for videos and extracted frames)
 
-### Dependencies - Manual setup
-Install via [Homebrew](https://brew.sh):
+- macOS or Linux operating system
+- Active internet connection for video download
+- Approximately 2GB free disk space (for videos and extracted frames)
+- Python 3.x installed
+
+### Required Dependencies
+
+Install the following dependencies via Homebrew:
+
 ```bash
 brew install yt-dlp ffmpeg python imagemagick
+```
 
+---
 
-### Setup Instruction:
+## Installation
 
-git clone https://github.com/<your-repo>/youtube-ml-dataset.git
-cd youtube-ml-dataset
+### Clone the Repository
 
-### Create a Python Virtual Environment
+```bash
+git clone https://github.com/<your-username>/PML-DS-IITB-Projects.git
+cd PML-DS-IITB-Projects/pml-ds
+```
 
+### Create Python Virtual Environment
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install pillow
+```
+
+---
+
+## Usage
+
+### Method 1: Manual Step-by-Step Execution
+
+#### Step 1: Capture Frames from YouTube Video
+
+Make the script executable and run it:
+
+```bash
+chmod +x youtube_video_to_frames.sh
+./youtube_video_to_frames.sh
+```
+
+When prompted, provide:
+- YouTube video URL
+- Time gap between frames (in seconds, e.g., 2)
+- Total number of frames to capture (e.g., 300)
+
+**Output Structure:**
+
+```
+frames_dataset/
+├── train/
+│   ├── frame_0001.png
+│   ├── frame_0002.png
+│   └── ...
+├── test/
+│   ├── frame_0241.png
+│   └── ...
+└── dataset_info.csv
+```
+
+#### Step 2: Generate 8×8 Grid Tiles and Overlays
+
+Run the Python script to split images into tiles and create grid overlays:
+
+```bash
+python split_8x8_grid_numbered.py
+```
+
+**Output Structure:**
+
+```
+frames_dataset_tiles/
+├── train/
+│   ├── frame_0001_tiles/
+│   │   ├── frame_0001_tile_01.png
+│   │   ├── frame_0001_tile_02.png
+│   │   ├── ...
+│   │   └── frame_0001_grid_overlay.png
+│   └── ...
+├── test/
+│   ├── frame_0241_tiles/
+│   │   ├── frame_0241_tile_01.png
+│   │   ├── ...
+│   │   └── frame_0241_grid_overlay.png
+│   └── ...
+├── tiles_info.csv
+└── frames_dataset_tiles.zip
+```
+
+### Method 2: Automated Setup and Execution
+
+For a fully automated setup, use the setup script:
+
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+The script will:
+- Check and install required dependencies (if missing)
+- Create and configure the Python virtual environment
+- Prompt for YouTube video URL
+- Prompt for frame capture interval (e.g., every 2 seconds)
+- Prompt for total number of frames to capture (e.g., 300)
+- Automatically execute the entire pipeline
+
+**Final Output:**
+
+The script generates all required files for model training:
+- Training and test image frames (800×600)
+- 8×8 grid tiles for each image
+- Grid overlay visualizations
+- Metadata CSV files
+- Complete dataset ZIP archive
+
+---
+
+## Complete Command Reference
+
+For quick reference, here is the complete command sequence:
+
+```bash
+# 1. Install dependencies
+brew install yt-dlp ffmpeg python imagemagick
+
+# 2. Create Python virtual environment
 python3 -m venv venv
 source venv/bin/activate
 pip install pillow
 
+# 3. Capture frames from YouTube video
+chmod +x youtube_video_to_frames.sh
+./youtube_video_to_frames.sh
 
-Step 1 — Capture Frames from YouTube
+# 4. Generate grid overlays, tiles, and ZIP archive
+python split_8x8_grid_numbered.py
 
-chmod +x youtube_to_frames.sh
-./youtube_to_frames.sh
+# 5. Deactivate virtual environment (optional)
+deactivate
+```
 
-Output:
+---
 
-frames_dataset/
- ├── train/
- │   ├── frame_0001.png
- │   ├── frame_0002.png
- ├── test/
- │   ├── frame_0241.png
- └── dataset_info.csv
+## Output Files
 
-Step 2: Build 8×8 Grid Tiles and Overlays
+### Dataset Information (`dataset_info.csv`)
 
-python split_8x8_grid_numbered_zip.py
+Contains metadata for each frame including:
+- Image path
+- Set type (train/test)
+- Timestamp
+- Video title
+- Source URL
 
-frames_dataset_tiles/
- ├── train/
- │   ├── frame_0001_tiles/
- │   │   ├── frame_0001_tile_01.png
- │   │   ├── ...
- │   │   ├── frame_0001_grid_overlay.png
- ├── test/
- │   ├── frame_0241_tiles/
- │   │   ├── frame_0241_tile_01.png
- │   │   ├── ...
- │   │   ├── frame_0241_grid_overlay.png
- ├── tiles_info.csv
-frames_dataset_tiles.zip
+### Tiles Information (`tiles_info.csv`)
 
+Contains metadata for each tile including:
+- Tile path
+- Set type (train/test)
+- Parent image name
+- Row and column position
+- Tile index (1-64)
 
+### ZIP Archive (`frames_dataset_tiles.zip`)
 
-Full Command Summary:
+Complete dataset package containing:
+- All training and test tiles
+- Grid overlay images
+- Metadata CSV files
+- Ready for model training or distribution
 
-# 1. Install dependencies
-    brew install yt-dlp ffmpeg python imagemagick
+---
 
-# 2. Create environment
-    python3 -m venv venv
-    source venv/bin/activate
-    pip install pillow
+## Project Structure
 
-# 3. Capture frames from YouTube
-    chmod +x youtube_to_frames.sh
-    ./youtube_to_frames.sh
+```
+PML-DS-IITB-Projects/
+├── README.md
+├── LICENSE
+└── pml-ds/
+    ├── setup.sh                          # Automated setup script
+    ├── youtube_video_to_frames.sh        # Frame extraction script
+    └── split_8x8_grid_numbered.py        # Grid tile generation script
+```
 
-# 4. Build grid overlays, tiles, and zip dataset
-    python split_8x8_grid_numbered_zip.py
+---
 
-# 5. Deactivate environment (optional)
-    deactivate
+## Technical Details
 
+### Image Specifications
 
+- Input: YouTube video (any format supported by yt-dlp)
+- Output resolution: 800×600 pixels (4:3 aspect ratio)
+- Format: PNG
+- Quality: High (q:v=2)
 
-Optional: To run entire setup with one file execution
+### Grid Specifications
 
-Setting up project with setup.sh: Automatic setup
+- Grid size: 8×8 (64 tiles per image)
+- Tile size: 100×75 pixels per tile
+- Overlay: Semi-transparent yellow grid lines with black numbered labels
 
-chmod +x setup.sh
+### Dataset Split
 
-./setup.sh
+- Training set: 80% of captured frames
+- Test set: 20% of captured frames
+- Split is performed sequentially (first 20% to test, remainder to train)
 
-User will be guided interactively to:
+---
 
-    Enter YouTube video URL
+## License
 
-    Choose frame interval (e.g., every 2 seconds)
+See LICENSE file for details.
 
-    Choose total frames (e.g., 300)
+---
 
-Output:
-Required files to be used for model training.
+## Contributing
 
+This is a project repository for IIT Bombay Data Science diploma coursework. For questions or issues, please open an issue in the repository.
