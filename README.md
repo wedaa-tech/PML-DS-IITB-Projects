@@ -35,10 +35,27 @@ This project automates the complete pipeline for converting YouTube videos into 
 
 ### Required Dependencies
 
-Install the following dependencies via Homebrew:
+#### System Dependencies
+
+Install the following system dependencies via Homebrew:
 
 ```bash
 brew install yt-dlp ffmpeg python imagemagick
+```
+
+#### Python Dependencies
+
+The following Python packages are required and will be installed via pip:
+
+- `pillow` - Image processing
+- `opencv-python` - Computer vision operations (cv2)
+- `pandas` - Data manipulation and CSV handling
+- `tqdm` - Progress bars
+
+These will be automatically installed when using the setup script, or manually via:
+
+```bash
+pip install pillow opencv-python pandas tqdm
 ```
 
 ---
@@ -57,7 +74,8 @@ cd PML-DS-IITB-Projects/pml-ds
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install pillow
+pip install --upgrade pip
+pip install pillow opencv-python pandas tqdm
 ```
 
 ---
@@ -162,7 +180,8 @@ brew install yt-dlp ffmpeg python imagemagick
 # 2. Create Python virtual environment
 python3 -m venv venv
 source venv/bin/activate
-pip install pillow
+pip install --upgrade pip
+pip install pillow opencv-python pandas tqdm
 
 # 3. Capture frames from YouTube video
 chmod +x youtube_video_to_frames.sh

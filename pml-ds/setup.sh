@@ -35,14 +35,17 @@ fi
 echo "Activating Python environment..."
 source venv/bin/activate
 
-# --- Install Pillow if missing ---
-if ! python -c "import PIL" &> /dev/null; then
-  echo "Installing Pillow..."
-  pip install --upgrade pip
-  pip install pillow
-else
-  echo "Pillow already installed."
-fi
+# --- Install Python packages ---
+echo "Installing Python packages..."
+pip install --upgrade pip
+
+# Install required packages
+pip install pillow opencv-python pandas tqdm || {
+  echo "Error: Failed to install Python packages"
+  exit 1
+}
+
+echo "Python packages installed successfully."
 
 # --- Verify required scripts ---
 if [ ! -f "youtube_to_frames.sh" ]; then
@@ -59,10 +62,10 @@ fi
 chmod +x youtube_to_frames.sh
 
 # --- Run the pipeline ---
-echo " Starting YouTube frame capture..."
+echo "Starting YouTube frame capture..."
 ./youtube_to_frames.sh
 
-echo " Building 8x8 grid overlays, tiles, and zipped dataset..."
+echo "Building 8x8 grid overlays, tiles, and zipped dataset..."
 python split_8x8_grid_numbered_zip.py
 
 # --- Deactivate environment ---
