@@ -94,26 +94,26 @@ with open(CSV_FILE, mode="w", newline="") as csvfile:
         src_dir = os.path.join(SRC_BASE, set_type)
         dst_dir = os.path.join(DST_BASE, set_type)
 
-        print(f"📂 Processing {set_type.upper()} images...")
+        print(f"Processing {set_type.upper()} images...")
         for img_file in os.listdir(src_dir):
             if img_file.lower().endswith(".png"):
                 img_path = os.path.join(src_dir, img_file)
                 img_out_folder = os.path.join(dst_dir, f"{os.path.splitext(img_file)[0]}_tiles")
                 split_image(img_path, img_out_folder, set_type)
 
-print("✅ All images split and grid overlays generated!")
-print(f"📊 Metadata saved to: {CSV_FILE}")
+print("All images split and grid overlays generated!")
+print(f"Metadata saved to: {CSV_FILE}")
 
 # --- ZIP CREATION ---
-print("📦 Creating ZIP archive...")
+print("Creating ZIP archive...")
 
 if os.path.exists(ZIP_FILE):
     os.remove(ZIP_FILE)
 
 shutil.make_archive(DST_BASE, 'zip', DST_BASE)
 
-print("✅ Dataset successfully zipped!")
-print(f"📁 ZIP file: {ZIP_FILE}")
+print("Dataset successfully zipped!")
+print(f"ZIP file: {ZIP_FILE}")
 print("-----------------------------------------------------------")
-print("🎯 Your dataset is ready for ML training or upload.")
+print("Your dataset is ready for ML training or upload.")
 print("-----------------------------------------------------------")

@@ -41,25 +41,25 @@ mkdir -p "$TRAIN_DIR"
 mkdir -p "$TEST_DIR"
 
 # --- Step 1: Download video safely ---
-echo "⬇️  Downloading video locally for stable processing..."
+echo "Downloading video locally for stable processing..."
 yt-dlp -f "best[ext=mp4]" -o "$TEMP_FILE" --no-playlist "$YT_URL"
 
 if [ ! -f "$TEMP_FILE" ]; then
-    echo "❌ Error: Video download failed."
+    echo "Error: Video download failed."
     exit 1
 fi
 
 # --- Step 2: Extract frames ---
-echo "🎥 Extracting frames every $GAP seconds (FPS=$FPS)..."
+echo "Extracting frames every $GAP seconds (FPS=$FPS)..."
 ffmpeg -hide_banner -loglevel error -i "$TEMP_FILE" -vf "fps=$FPS" -frames:v "$TOTAL_FRAMES" -q:v 2 "$BASE_DIR/frame_%04d.png"
 
 if [ $? -ne 0 ]; then
-    echo "❌ Frame extraction failed."
+    echo "Frame extraction failed."
     exit 1
 fi
 
 # --- Step 3: Train/Test split ---
-echo "📂 Splitting frames into train/test sets..."
+echo "Splitting frames into train/test sets..."
 TOTAL=$(ls "$BASE_DIR"/*.png | wc -l | tr -d ' ')
 TEST_COUNT=$((TOTAL / 5))  # 20% test
 COUNT=0
@@ -74,7 +74,7 @@ for IMG in "$BASE_DIR"/*.png; do
 done
 
 # --- Step 4: Generate dataset_info.csv ---
-echo "🧾 Generating dataset_info.csv..."
+echo "Generating dataset_info.csv..."
 
 VIDEO_TITLE=$(yt-dlp --get-title "$YT_URL")
 DATE_CAPTURED=$(date "+%Y-%m-%d %H:%M:%S")
@@ -92,12 +92,12 @@ done
 rm -f "$TEMP_FILE"
 
 # --- Summary ---
-echo "✅ Done!"
-echo "📊 Metadata file: $CSV_FILE"
-echo "📁 Train images: $(ls -1 $TRAIN_DIR | wc -l)"
-echo "📁 Test images:  $(ls -1 $TEST_DIR | wc -l)"
+echo "Done!"
+echo "Metadata file: $CSV_FILE"
+echo "Train images: $(ls -1 $TRAIN_DIR | wc -l)"
+echo "Test images:  $(ls -1 $TEST_DIR | wc -l)"
 echo "-----------------------------------------------------------"
-echo "🎯 High-quality frames captured at every $GAP seconds"
-echo "🖼️ All frames are PNGs — full resolution"
-echo "📘 CSV file includes paths, timestamps, and source info"
+echo "High-quality frames captured at every $GAP seconds"
+echo "All frames are PNGs — full resolution"
+echo "CSV file includes paths, timestamps, and source info"
 echo "-----------------------------------------------------------"
