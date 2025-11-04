@@ -19,6 +19,12 @@ ball  -> 1
 bat   -> 2
 stumps-> 3
 
+Features:
+---------
+- Safe reruns: Skips frames that already have tiles and CSV files
+- Preserves existing labeled data - never overwrites
+- Only processes new frames from frames_dataset/{train,test}/
+
 After generation, manually edit each {frame_id}_labels.csv
 to assign the correct label to tiles containing bats, balls, or stumps.
 
@@ -71,22 +77,34 @@ def process_split(split_name: str):
         if f.lower().endswith((".png", ".jpg", ".jpeg"))
     ])
 
-    print(f"\n🧩 Processing {split_name.upper()} split - {len(frame_files)} frames found")
+    print(f"\nProcessing {split_name.upper()} split - {len(frame_files)} frames found")
 
-    for fname in tqdm(frame_files):
+    processed_count = 0
+    skipped_count = 0
+
+    for fname in tqdm(frame_files, desc=f"Processing {split_name}"):
         frame_id = os.path.splitext(fname)[0]
         img_path = os.path.join(frames_dir, fname)
+        
+        # Create output folder for tiles
+        frame_tile_dir = os.path.join(tiles_split_dir, f"{frame_id}_tiles")
+        ensure_dir(frame_tile_dir)
+        
+        # Check if tiles and CSV already exist
+        csv_path = os.path.join(frame_tile_dir, f"{frame_id}_labels.csv")
+        first_tile_path = os.path.join(frame_tile_dir, "tile_01.png")
+        
+        if os.path.exists(csv_path) and os.path.exists(first_tile_path):
+            skipped_count += 1
+            continue  # Skip frames that already have tiles and CSV
+        
         img = read_image(img_path)
 
         # Split into 8×8 grid tiles
         tiles = split_image_into_grid(img, cols=GRID_COLS, rows=GRID_ROWS)
         if len(tiles) != 64:
-            print(f"⚠️ {fname}: Expected 64 tiles, got {len(tiles)} — skipping")
+            print(f"WARNING: {fname}: Expected 64 tiles, got {len(tiles)} — skipping")
             continue
-
-        # Create output folder for tiles
-        frame_tile_dir = os.path.join(tiles_split_dir, f"{frame_id}_tiles")
-        ensure_dir(frame_tile_dir)
 
         # Save tiles and collect metadata
         records = []
@@ -104,13 +122,21 @@ def process_split(split_name: str):
                 "LabelCode": LABEL_MAP["none"]
             })
 
-        # Save per-frame CSV
-        csv_path = os.path.join(frame_tile_dir, f"{frame_id}_labels.csv")
-        pd.DataFrame(records).to_csv(csv_path, index=False)
-        print(f"✅ Saved labels for {frame_id}: {csv_path}")
+        # Save per-frame CSV (only if it doesn't exist)
+        if not os.path.exists(csv_path):
+            pd.DataFrame(records).to_csv(csv_path, index=False)
+            processed_count += 1
+        else:
+            skipped_count += 1
+    
+    print(f"  Processed: {processed_count} new frames")
+    if skipped_count > 0:
+        print(f"  Skipped: {skipped_count} existing frames")
 
 
 if __name__ == "__main__":
     for split in ["train", "test"]:
         process_split(split)
-    print("\n✨ All per-frame label CSVs created successfully!")
+    print("\nAll per-frame label CSVs processed!")
+    print("Note: Existing tiles and CSVs are preserved and skipped")
+    print("Only new frames are processed and added")

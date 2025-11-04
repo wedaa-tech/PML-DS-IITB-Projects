@@ -4,10 +4,10 @@ import shutil
 from PIL import Image, ImageDraw, ImageFont
 
 # ===========================================================
-# 🧩 Split 800x600 images into 8x8 (64 tiles)
+# Split 800x600 images into 8x8 (64 tiles)
 # + Semi-transparent yellow grid with black numbers
-# + Auto-generate metadata CSV
-# + Zip the final dataset (train/test + CSV)
+# + Auto-generate/update metadata CSV (appends, doesn't overwrite)
+# + Safe reruns - skips existing tiles, preserves labeled data
 # ===========================================================
 
 # --- Configuration ---
@@ -31,10 +31,13 @@ try:
 except:
     FONT = ImageFont.load_default()
 
-# --- Create metadata file ---
-with open(CSV_FILE, mode="w", newline="") as csvfile:
+# --- Create or append to metadata file ---
+csv_exists = os.path.exists(CSV_FILE)
+with open(CSV_FILE, mode="a", newline="") as csvfile:
     writer = csv.writer(csvfile)
-    writer.writerow(["tile_path", "set_type", "parent_image", "row", "col", "tile_index"])
+    # Write header only if file is new
+    if not csv_exists:
+        writer.writerow(["tile_path", "set_type", "parent_image", "row", "col", "tile_index"])
 
     def split_image(img_path, dst_folder, set_type):
         """Splits a single 800x600 image into 64 tiles and adds grid overlay"""
@@ -47,6 +50,14 @@ with open(CSV_FILE, mode="w", newline="") as csvfile:
         if w != IMG_W or h != IMG_H:
             img = img.resize((IMG_W, IMG_H))
 
+        # Check if tiles already exist for this frame
+        grid_out_path = os.path.join(dst_folder, f"{base_name}_grid_overlay.png")
+        first_tile_path = os.path.join(dst_folder, f"{base_name}_tile_01.png")
+        
+        if os.path.exists(first_tile_path) and os.path.exists(grid_out_path):
+            print(f"  Skipping {base_name} - tiles already exist")
+            return False  # Indicate frame was skipped
+        
         # === GRID OVERLAY VISUALIZATION ===
         if DRAW_GRID:
             grid_img = img.copy().convert("RGBA")
@@ -72,7 +83,6 @@ with open(CSV_FILE, mode="w", newline="") as csvfile:
                     tile_index += 1
 
             combined = Image.alpha_composite(grid_img, overlay)
-            grid_out_path = os.path.join(dst_folder, f"{base_name}_grid_overlay.png")
             combined.convert("RGB").save(grid_out_path)
 
         # === TILE EXTRACTION ===
@@ -88,32 +98,47 @@ with open(CSV_FILE, mode="w", newline="") as csvfile:
                 tile.save(tile_path)
                 writer.writerow([tile_path, set_type, base_name, r + 1, c + 1, tile_index])
                 tile_index += 1
+        
+        return True  # Indicate frame was processed
 
     # --- Process train/test images ---
     for set_type in ["train", "test"]:
         src_dir = os.path.join(SRC_BASE, set_type)
         dst_dir = os.path.join(DST_BASE, set_type)
 
-        print(f"Processing {set_type.upper()} images...")
+        print(f"\nProcessing {set_type.upper()} images...")
+        processed_count = 0
+        skipped_count = 0
+        
         for img_file in os.listdir(src_dir):
             if img_file.lower().endswith(".png"):
                 img_path = os.path.join(src_dir, img_file)
                 img_out_folder = os.path.join(dst_dir, f"{os.path.splitext(img_file)[0]}_tiles")
-                split_image(img_path, img_out_folder, set_type)
+                was_processed = split_image(img_path, img_out_folder, set_type)
+                if was_processed:
+                    processed_count += 1
+                else:
+                    skipped_count += 1
+        
+        print(f"  Processed: {processed_count} new frames")
+        if skipped_count > 0:
+            print(f"  Skipped: {skipped_count} existing frames")
 
-print("All images split and grid overlays generated!")
-print(f"Metadata saved to: {CSV_FILE}")
-
-# --- ZIP CREATION ---
-print("Creating ZIP archive...")
-
-if os.path.exists(ZIP_FILE):
-    os.remove(ZIP_FILE)
-
-shutil.make_archive(DST_BASE, 'zip', DST_BASE)
-
-print("Dataset successfully zipped!")
-print(f"ZIP file: {ZIP_FILE}")
+print("\nAll images processed!")
+print(f"Metadata saved/updated: {CSV_FILE}")
 print("-----------------------------------------------------------")
-print("Your dataset is ready for ML training or upload.")
+print("Note: CSV file is appended to (not overwritten)")
+print("Existing tiles are preserved and skipped")
+print("-----------------------------------------------------------")
+
+# --- ZIP CREATION (optional - commented out to avoid overwriting) ---
+# Uncomment if you want to recreate ZIP on each run
+# print("\nCreating ZIP archive...")
+# if os.path.exists(ZIP_FILE):
+#     os.remove(ZIP_FILE)
+# shutil.make_archive(DST_BASE, 'zip', DST_BASE)
+# print("Dataset successfully zipped!")
+# print(f"ZIP file: {ZIP_FILE}")
+
+print("\nYour dataset is ready for ML training or upload.")
 print("-----------------------------------------------------------")
