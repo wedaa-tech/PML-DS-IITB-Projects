@@ -28,7 +28,7 @@ This project automates the complete pipeline for converting YouTube videos into 
 
 ### System Requirements
 
-- macOS or Linux operating system
+- **macOS, Linux, or Windows** operating system
 - Active internet connection for video download
 - Approximately 2GB free disk space (for videos and extracted frames)
 - Python 3.x installed
@@ -37,11 +37,36 @@ This project automates the complete pipeline for converting YouTube videos into 
 
 #### System Dependencies
 
+**macOS/Linux:**
+
 Install the following system dependencies via Homebrew:
 
 ```bash
 brew install yt-dlp ffmpeg python imagemagick
 ```
+
+**Windows:**
+
+Install the following system dependencies using one of these methods:
+
+**Option 1: Using winget (Windows 10/11 - recommended)**
+```powershell
+winget install yt-dlp
+winget install ffmpeg
+winget install ImageMagick.ImageMagick
+```
+
+**Option 2: Using Chocolatey**
+```powershell
+choco install yt-dlp ffmpeg imagemagick
+```
+
+**Option 3: Manual Installation**
+- **yt-dlp**: Download from https://github.com/yt-dlp/yt-dlp/releases
+- **ffmpeg**: Download from https://ffmpeg.org/download.html
+- **ImageMagick**: Download from https://imagemagick.org/script/download.php
+
+Make sure all tools are added to your system PATH.
 
 #### Python Dependencies
 
@@ -54,7 +79,13 @@ The following Python packages are required and will be installed via pip:
 
 These will be automatically installed when using the setup script, or manually via:
 
+**macOS/Linux:**
 ```bash
+pip install pillow opencv-python pandas tqdm
+```
+
+**Windows:**
+```powershell
 pip install pillow opencv-python pandas tqdm
 ```
 
@@ -64,13 +95,21 @@ pip install pillow opencv-python pandas tqdm
 
 ### Clone the Repository
 
+**macOS/Linux:**
 ```bash
 git clone https://github.com/<your-username>/PML-DS-IITB-Projects.git
 cd PML-DS-IITB-Projects/pml-ds
 ```
 
-### Create Python Virtual Environment
+**Windows:**
+```powershell
+git clone https://github.com/<your-username>/PML-DS-IITB-Projects.git
+cd PML-DS-IITB-Projects\pml-ds
+```
 
+### Create Python Virtual Environment (Manual Setup)
+
+**macOS/Linux:**
 ```bash
 python3 -m venv venv
 source venv/bin/activate
@@ -78,25 +117,78 @@ pip install --upgrade pip
 pip install pillow opencv-python pandas tqdm
 ```
 
+**Windows:**
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install --upgrade pip
+pip install pillow opencv-python pandas tqdm
+```
+
+**Note:** On Windows, if you encounter an execution policy error when running PowerShell scripts, run:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
 ---
 
 ## Usage
 
-### Method 1: Manual Step-by-Step Execution
+### Step 1: Setup
 
-#### Step 1: Capture Frames from YouTube Video
+First, run the setup script to install dependencies and create the Python virtual environment:
 
-Make the script executable and run it:
-
+**macOS/Linux:**
 ```bash
-chmod +x youtube_video_to_frames.sh
-./youtube_video_to_frames.sh
+cd pml-ds
+chmod +x setup.sh
+./setup.sh
 ```
 
-When prompted, provide:
-- YouTube video URL
-- Time gap between frames (in seconds, e.g., 2)
-- Total number of frames to capture (e.g., 300)
+**Windows:**
+```powershell
+cd pml-ds
+.\setup.ps1
+```
+
+The setup script will:
+- Check for required dependencies (yt-dlp, ffmpeg, python, imagemagick)
+- Create and configure the Python virtual environment
+- Install required Python packages (pillow, opencv-python, pandas, tqdm)
+
+**Note for Windows users:** If you encounter execution policy restrictions, run:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+### Step 2: Execute Pipeline
+
+After setup is complete, run the pipeline execution script:
+
+**macOS/Linux:**
+```bash
+chmod +x run_pipeline.sh
+./run_pipeline.sh
+```
+
+**Windows:**
+```powershell
+.\run_pipeline.ps1
+```
+
+The pipeline will execute the following scripts in sequence:
+
+1. **youtube_video_to_frames.sh/.ps1** - Extract frames from YouTube video
+   - When prompted, provide:
+     - YouTube video URL
+     - Time gap between frames (in seconds, e.g., 2)
+     - Total number of frames to capture (e.g., 300)
+
+2. **generate_dataset_info_csv.py** - Generate dataset metadata CSV
+
+3. **split_8x8_grid_numbered.py** - Split images into 8×8 grid tiles and create overlays
+
+4. **generate_per_frame_labels_csv.py** - Generate per-frame labels CSV
 
 **Output Structure:**
 
@@ -110,19 +202,7 @@ frames_dataset/
 │   ├── frame_0241.png
 │   └── ...
 └── dataset_info.csv
-```
 
-#### Step 2: Generate 8×8 Grid Tiles and Overlays
-
-Run the Python script to split images into tiles and create grid overlays:
-
-```bash
-python split_8x8_grid_numbered.py
-```
-
-**Output Structure:**
-
-```
 frames_dataset_tiles/
 ├── train/
 │   ├── frame_0001_tiles/
@@ -138,59 +218,124 @@ frames_dataset_tiles/
 │   │   └── frame_0241_grid_overlay.png
 │   └── ...
 ├── tiles_info.csv
-└── frames_dataset_tiles.zip
+└── per_frame_labels.csv
 ```
 
-### Method 2: Automated Setup and Execution
+### Step 3: Manual Step-by-Step Execution (Alternative)
 
-For a fully automated setup, use the setup script:
+If you prefer to run scripts individually:
 
+**macOS/Linux:**
 ```bash
-chmod +x setup.sh
-./setup.sh
+# Activate virtual environment
+source venv/bin/activate
+
+# Step 1: Extract frames from YouTube video
+./scripts/youtube_video_to_frames.sh
+
+# Step 2: Generate dataset info CSV
+python scripts/generate_dataset_info_csv.py
+
+# Step 3: Split images into 8×8 grid tiles
+python scripts/split_8x8_grid_numbered.py
+
+# Step 4: Generate per-frame labels CSV
+python scripts/generate_per_frame_labels_csv.py
+
+# Deactivate virtual environment
+deactivate
 ```
 
-The script will:
-- Check and install required dependencies (if missing)
-- Create and configure the Python virtual environment
-- Prompt for YouTube video URL
-- Prompt for frame capture interval (e.g., every 2 seconds)
-- Prompt for total number of frames to capture (e.g., 300)
-- Automatically execute the entire pipeline
+**Windows:**
+```powershell
+# Activate virtual environment
+.\venv\Scripts\Activate.ps1
 
-**Final Output:**
+# Step 1: Extract frames from YouTube video
+.\scripts\youtube_video_to_frames.ps1
 
-The script generates all required files for model training:
-- Training and test image frames (800×600)
-- 8×8 grid tiles for each image
-- Grid overlay visualizations
-- Metadata CSV files
-- Complete dataset ZIP archive
+# Step 2: Generate dataset info CSV
+python scripts\generate_dataset_info_csv.py
+
+# Step 3: Split images into 8×8 grid tiles
+python scripts\split_8x8_grid_numbered.py
+
+# Step 4: Generate per-frame labels CSV
+python scripts\generate_per_frame_labels_csv.py
+
+# Deactivate virtual environment
+deactivate
+```
 
 ---
+
+## Checking Label Distribution
+
+After you have completed labeling your images, you can check the label distribution using the provided script:
+
+**macOS/Linux:**
+```bash
+# Activate virtual environment (if not already activated)
+source venv/bin/activate
+
+# Check label distribution
+python scripts/check_label_distribution.py
+
+# Deactivate virtual environment (optional)
+deactivate
+```
+
+**Windows:**
+```powershell
+# Activate virtual environment (if not already activated)
+.\venv\Scripts\Activate.ps1
+
+# Check label distribution
+python scripts\check_label_distribution.py
+
+# Deactivate virtual environment (optional)
+deactivate
+```
+
+This script will analyze your labeled dataset and provide statistics about:
+- Total number of labels
+- Distribution of labels across different categories
+- Label counts per frame/tile
+- Any other relevant label statistics
 
 ## Complete Command Reference
 
 For quick reference, here is the complete command sequence:
 
+**macOS/Linux:**
 ```bash
-# 1. Install dependencies
-brew install yt-dlp ffmpeg python imagemagick
+# 1. Setup (run once)
+cd pml-ds
+chmod +x setup.sh
+./setup.sh
 
-# 2. Create Python virtual environment
-python3 -m venv venv
+# 2. Execute pipeline (run for each dataset)
+chmod +x run_pipeline.sh
+./run_pipeline.sh
+
+# 3. After labeling, check label distribution
 source venv/bin/activate
-pip install --upgrade pip
-pip install pillow opencv-python pandas tqdm
+python scripts/check_label_distribution.py
+deactivate
+```
 
-# 3. Capture frames from YouTube video
-chmod +x youtube_video_to_frames.sh
-./youtube_video_to_frames.sh
+**Windows:**
+```powershell
+# 1. Setup (run once)
+cd pml-ds
+.\setup.ps1
 
-# 4. Generate grid overlays, tiles, and ZIP archive
-python split_8x8_grid_numbered.py
+# 2. Execute pipeline (run for each dataset)
+.\run_pipeline.ps1
 
-# 5. Deactivate virtual environment (optional)
+# 3. After labeling, check label distribution
+.\venv\Scripts\Activate.ps1
+python scripts\check_label_distribution.py
 deactivate
 ```
 
@@ -233,9 +378,17 @@ PML-DS-IITB-Projects/
 ├── README.md
 ├── LICENSE
 └── pml-ds/
-    ├── setup.sh                          # Automated setup script
-    ├── youtube_video_to_frames.sh        # Frame extraction script
-    └── split_8x8_grid_numbered.py        # Grid tile generation script
+    ├── setup.sh                          # Setup script (macOS/Linux)
+    ├── setup.ps1                         # Setup script (Windows)
+    ├── run_pipeline.sh                   # Pipeline execution script (macOS/Linux)
+    ├── run_pipeline.ps1                  # Pipeline execution script (Windows)
+    └── scripts/
+        ├── youtube_video_to_frames.sh           # Frame extraction script (macOS/Linux)
+        ├── youtube_video_to_frames.ps1         # Frame extraction script (Windows)
+        ├── generate_dataset_info_csv.py        # Dataset metadata generation
+        ├── split_8x8_grid_numbered.py          # Grid tile generation script
+        ├── generate_per_frame_labels_csv.py    # Per-frame labels CSV generation
+        └── check_label_distribution.py         # Label distribution checker
 ```
 
 ---

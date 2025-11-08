@@ -1,12 +1,10 @@
 #!/bin/bash
 # ===========================================================
-# YouTube → Image Dataset Full Setup & Execution Script
+# YouTube → Image Dataset Setup Script
 # ===========================================================
-# This script:
-# Installs yt-dlp, ffmpeg, python3, and imagemagick (via Homebrew)
-# Creates Python venv and installs Pillow
-# Runs youtube_to_frames.sh to capture video frames
-# Runs split_8x8_grid_numbered_zip.py to generate 8×8 tiles & ZIP
+# This script handles the setup and installation:
+# - Installs yt-dlp, ffmpeg, python3, and imagemagick (via Homebrew)
+# - Creates Python venv and installs required packages
 # ===========================================================
 
 set -e  # Exit immediately on error
@@ -47,38 +45,17 @@ pip install pillow opencv-python pandas tqdm || {
 
 echo "Python packages installed successfully."
 
-# --- Verify required scripts ---
-if [ ! -f "youtube_to_frames.sh" ]; then
-  echo "Missing youtube_to_frames.sh! Please ensure it's in the current folder."
-  exit 1
-fi
-
-if [ ! -f "split_8x8_grid_numbered_zip.py" ]; then
-  echo "Missing split_8x8_grid_numbered_zip.py! Please ensure it's in the current folder."
-  exit 1
-fi
-
-# --- Make shell script executable ---
-chmod +x youtube_to_frames.sh
-
-# --- Run the pipeline ---
-echo "Starting YouTube frame capture..."
-./youtube_to_frames.sh
-
-echo "Building 8x8 grid overlays, tiles, and zipped dataset..."
-python split_8x8_grid_numbered_zip.py
-
-# --- Deactivate environment ---
-deactivate
+# --- Make scripts executable ---
+echo "Making scripts executable..."
+chmod +x scripts/youtube_video_to_frames.sh
+chmod +x run_pipeline.sh 2>/dev/null || true
 
 # --- Completion summary ---
-echo " All steps completed successfully!"
-echo "-----------------------------------------------------------"
-echo " Final Output:"
-echo " - frames_dataset/train → Training frames (800×600)"
-echo " - frames_dataset/test  → Test frames (800×600)"
-echo " - frames_dataset_tiles/ → 8x8 grid tiles + overlays"
-echo " - frames_dataset_tiles.zip → Final zipped dataset"
-echo "-----------------------------------------------------------"
-echo " You’re ready to use your dataset for model training!"
-echo "-----------------------------------------------------------"
+echo ""
+echo "==========================================================="
+echo "Setup completed successfully!"
+echo "==========================================================="
+echo "Next steps:"
+echo "1. Run './run_pipeline.sh' to execute the dataset generation pipeline"
+echo "2. After labeling, use 'python scripts/check_label_distribution.py' to check label distribution"
+echo "==========================================================="

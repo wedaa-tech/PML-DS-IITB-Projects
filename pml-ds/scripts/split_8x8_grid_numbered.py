@@ -25,11 +25,31 @@ CSV_FILE = os.path.join(DST_BASE, "tiles_info.csv")
 os.makedirs(os.path.join(DST_BASE, "train"), exist_ok=True)
 os.makedirs(os.path.join(DST_BASE, "test"), exist_ok=True)
 
-# --- Load font for numbering ---
-try:
-    FONT = ImageFont.truetype("Arial.ttf", 16)
-except:
-    FONT = ImageFont.load_default()
+# --- Load font for numbering (cross-platform) ---
+FONT = None
+# Try common font paths for different operating systems
+font_paths = [
+    "Arial.ttf",  # Current directory
+    "/System/Library/Fonts/Helvetica.ttc",  # macOS
+    "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",  # Linux
+    "C:/Windows/Fonts/arial.ttf",  # Windows
+    "C:/Windows/Fonts/Arial.ttf",  # Windows (alternative)
+]
+
+for font_path in font_paths:
+    try:
+        if os.path.exists(font_path):
+            FONT = ImageFont.truetype(font_path, 16)
+            break
+    except:
+        continue
+
+# Fallback to default font if no font found
+if FONT is None:
+    try:
+        FONT = ImageFont.truetype("arial.ttf", 16)  # Try lowercase
+    except:
+        FONT = ImageFont.load_default()
 
 # --- Create or append to metadata file ---
 csv_exists = os.path.exists(CSV_FILE)
