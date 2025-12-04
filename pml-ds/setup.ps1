@@ -110,7 +110,7 @@ Write-Host ""
 Write-Host "Installing Python packages..."
 python -m pip install --upgrade pip
 
-$packages = @("pillow", "opencv-python", "pandas", "tqdm")
+$packages = @("pillow", "opencv-python", "pandas", "tqdm", "ultralytics")
 foreach ($package in $packages) {
     Write-Host "Installing $package..."
     python -m pip install $package

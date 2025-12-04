@@ -38,7 +38,7 @@ echo "Installing Python packages..."
 pip install --upgrade pip
 
 # Install required packages
-pip install pillow opencv-python pandas tqdm || {
+pip install pillow opencv-python pandas tqdm ultralytics || {
   echo "Error: Failed to install Python packages"
   exit 1
 }
